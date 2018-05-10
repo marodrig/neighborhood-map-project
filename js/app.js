@@ -7,15 +7,16 @@ var bounds;
 //map initialization
 function initMap() {
     var myCity = {
-        lat: 37.370,
-        lng: -122.002
+        lat: 42.361145,
+        lng: -71.057083
     };
-    
+
     map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 12,
-        center: myCity
+        center: myCity,
+        zoom: 18
     });
-    
+    var transitLayer = new google.maps.TransitLayer();
+    transitLayer.setMap(map);
     infoWindow = new google.maps.InfoWindow();
     bounds = new google.maps.LatLngBounds();
     ko.applyBindings(new NeighborhoodMapViewModel());
@@ -29,16 +30,37 @@ function errorHandling() {
 //Array of map locations.
 var locationArray = [
     {
-        name: 'Bracher Park',
+        name: 'Central Station',
         location: {
-            lat: 37.370,
-            lng: -122.002
+            lat: 42.3651634477,
+            lng: -71.103322506
         }
-	}
+	},
+    {
+        name: 'Kendall/MIT Station',
+        location: {
+            lat: 42.3624602268,
+            lng: -71.0865855217
+        }
+    },
+    {
+        name: 'Harvard Square Station',
+        location: {
+            lat: 42.373939,
+            lng: -71.119106
+        }
+    },
+    {
+        name: 'Charles/Massachusetts General Hospital Station',
+        location: {
+            lat: 42.3612710899,
+            lng: -71.0720801353
+        }
+    }
 ];
 
 // Location object
-var Location = function (data) {
+var MapLocation = function (data) {
     var self = this;
     this.name = data.name;
     this.position = data.location;
@@ -48,11 +70,10 @@ var Location = function (data) {
 
     this.visible = ko.observable(true);
 
-    // Style the markers a bit. This will be our listing marker icon.
-    var defaultIcon = makeMarkerIcon('0091ff');
-    // Create a "highlighted location" marker color for when the user
-    // mouses over the marker.
-    var highlightedIcon = makeMarkerIcon('FFFF24');
+    // 
+    var defaultIcon = makeMarkerIcon('FF00FF');
+    // highlighted marker
+    var highlightedIcon = makeMarkerIcon('00FFFF');
 
     // Foursquare API settings
     var clientID = "LQRWX2N2YFMYRI451DXCFBP0LQYZCXTUNNZSW04JIAUEMSVH";
@@ -79,7 +100,6 @@ var Location = function (data) {
     });
 
     self.filterMarkers = ko.computed(function () {
-        // set marker and extend bounds (showListings)
         if (self.visible() === true) {
             self.marker.setMap(map);
             bounds.extend(self.marker.position);
@@ -89,14 +109,14 @@ var Location = function (data) {
         }
     });
 
-    // Create an onclick even to open an indowindow at each marker
+    // Create an onclick event 
     this.marker.addListener('click', function () {
         populateInfoWindow(this, self.street, self.city, self.phone, infoWindow);
         toggleBounce(this);
         map.panTo(this.getPosition());
     });
 
-    // Two event listeners - one for mouseover, one for mouseout,
+    // Two event listeners
     // to change the colors back and forth.
     this.marker.addListener('mouseover', function () {
         this.setIcon(highlightedIcon);
@@ -124,7 +144,7 @@ var NeighborhoodMapViewModel = function () {
     this.mapList = ko.observableArray([]);
 
     locationArray.forEach(function (location) {
-        self.mapList.push(new Location(location));
+        self.mapList.push(new MapLocation(location));
     });
 
     this.locationList = ko.computed(function () {

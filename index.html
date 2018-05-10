@@ -18,8 +18,17 @@
                 <li class="place" id="place" data-bind="text: name, click: bounce"></li>
             </ul>
         </div>
-        <div class="map" id="map" style="height:500px;width:500px">If you can read this, there has been an error loading Google Maps. Please Try Again.</div>
+        <div class="map" id="map">If you can read this, there has been an error loading Google Maps. Please Try Again.</div>
     </div>
+    
+     <footer class="footer">
+      <div class="container text-left">
+        <a href="https://developer.foursquare.com/" class="href" target="_blank">
+          <img id="foursquare-img" src="http://www.freeiconspng.com/uploads/foursquare-icon-22.png" alt="used with foursquare" >
+        </a>
+        <span class="footer-name">Mario Rodriguez &copy; All Rights reserved</span>
+      </div>
+    </footer>
 
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA-vSWFptCaYNV70dOOEHLk2i0e1JKzyHU&callback=initMap" type="text/javascript" onerror="errorHandling()"></script>
     <script src='js/knockout-3.4.2.js'></script>
