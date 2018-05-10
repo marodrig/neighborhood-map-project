@@ -10,22 +10,21 @@
 
 <body>
     <div class="search" id="search">
-        <input class="search-box" id="search-box" data-bind="textInput: searchTerm, valueUpdate: 'afterkeydown'" />
+        <input class="search-box" id="search-box" data-bind="textInput: searchItem, valueUpdate: 'afterkeydown'" />
     </div>
     <div class="app" id="app">
         <div class="list" id="list">
-            <ul class="results" id="results" data-bind="foreach: filteredList">
+            <ul class="results" id="results" data-bind="foreach: locationList">
                 <li class="place" id="place" data-bind="text: name, click: bounce"></li>
             </ul>
         </div>
-        <div class="map" id="map">If you can read this, there has been an error loading Google Maps. Please Try Again.</div>
+        <div class="map" id="map" style="height:500px;width:500px">If you can read this, there has been an error loading Google Maps. Please Try Again.</div>
     </div>
 
-
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA-vSWFptCaYNV70dOOEHLk2i0e1JKzyHU&callback=initMap" type="text/javascript" onerror="errorHandling()"></script>
     <script src='js/knockout-3.4.2.js'></script>
     <script src='js/jquery-3.2.1.min.js'></script>
     <script src='js/app.js'></script>
-     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA-vSWFptCaYNV70dOOEHLk2i0e1JKzyHU&callback=initMap" type="text/javascript" onerror="errorHandling()"></script>
 </body>
 
 </html>

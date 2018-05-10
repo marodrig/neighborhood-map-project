@@ -1,191 +1,207 @@
 'use strict';
+// global variables
 var map;
-var clientID;
-var clienteScret;
+var infoWindow;
+var bounds;
 
-var NeighborhoodMapViewModel = {
-
+//map initialization
+function initMap() {
+    var myCity = {
+        lat: 37.370,
+        lng: -122.002
+    };
+    
+    map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 12,
+        center: myCity
+    });
+    
+    infoWindow = new google.maps.InfoWindow();
+    bounds = new google.maps.LatLngBounds();
+    ko.applyBindings(new NeighborhoodMapViewModel());
 }
 
+// Error handling of Google Maps API.
+function errorHandling() {
+    alert("Error with Google Maps API.");
+}
+
+//Array of map locations.
 var locationArray = [
     {
         name: 'Bracher Park',
-        lat: 37.370,
-        long: -122.002
-	},
-    {
-        name: 'Hacker Dojo (old)',
-        lat: 37.402,
-        long: -122.052
-	},
-    {
-        name: 'Hacker Dojo (current)',
-        lat: 37.381,
-        long: -121.961
-	},
-    {
-        name: 'Red Rock Coffee',
-        lat: 37.393,
-        long: -122.081
-	},
-    {
-        name: 'Com Tam Thanh (Broken Rice)',
-        lat: 37.309,
-        long: -121.934
-	},
-    {
-        name: 'House of Falafel',
-        lat: 37.322,
-        long: -122.018
-	},
-    {
-        name: 'The Prolific Oven',
-        lat: 37.394,
-        long: -121.948
-	},
-    {
-        name: 'Pho Mai #1 Noodle House',
-        lat: 37.415,
-        long: -121.878
-	},
-    {
-        name: 'Alviso Marina County Park',
-        lat: 37.429,
-        long: -121.984
-	},
-    {
-        name: 'Peet\'s Coffee (aka "Church")',
-        lat: 37.307,
-        long: -121.900
+        location: {
+            lat: 37.370,
+            lng: -122.002
+        }
 	}
-]
+];
 
-var location = function (data) {
+// Location object
+var Location = function (data) {
     var self = this;
     this.name = data.name;
-    this.lat = data.lat;
-    this.long = data.long;
-    this.URL = "";
+    this.position = data.location;
     this.street = "";
     this.city = "";
     this.phone = "";
 
     this.visible = ko.observable(true);
 
-    var foursquareURL = 'https://api.foursquare.com/v2/venues/search?ll=' + this.lat + ',' + this.long + '&client_id=' + clientID + '&client_secret=' + clientSecret + '&v=20160118' + '&query=' + this.name;
+    // Style the markers a bit. This will be our listing marker icon.
+    var defaultIcon = makeMarkerIcon('0091ff');
+    // Create a "highlighted location" marker color for when the user
+    // mouses over the marker.
+    var highlightedIcon = makeMarkerIcon('FFFF24');
+
+    // Foursquare API settings
+    var clientID = "LQRWX2N2YFMYRI451DXCFBP0LQYZCXTUNNZSW04JIAUEMSVH";
+    var clientSecret = "M15I4MBAXTYAUNCPGMFXDSQJVPJID1FYYVZ2XIU5Y12E4Q3F";
+
+    var foursquareURL = 'https://api.foursquare.com/v2/venues/search?ll=' + this.position.lat + ',' + this.position.lng + '&client_id=' + clientID + '&client_secret=' + clientSecret + '&v=20160118' + '&query=' + this.name;
 
     $.getJSON(foursquareURL).done(function (data) {
         var results = data.response.venues[0];
-        self.URL = results.url;
-        if (typeof self.URL === 'undefined') {
-            self.URL = "";
-        }
-        self.street = results.location.formattedAddress[0];
-        self.city = results.location.formattedAddress[1];
-        self.phone = results.contact.phone;
-        if (typeof self.phone === 'undefined') {
-            self.phone = "";
-        } else {
-            self.phone = formatPhone(self.phone);
-        }
+        console.log(results.location.formattedAddress[0]);
+        self.street = results.location.formattedAddress[0] ? results.location.formattedAddress[0] : 'N/A';
+        self.city = results.location.formattedAddress[1] ? results.location.formattedAddress[1] : 'N/A';
+        self.phone = results.contact.formattedPhone ? results.contact.formattedPhone : 'N/A';
     }).fail(function () {
         alert("There was an error with the Foursquare API call. Please refresh the page and try again to load Foursquare data.");
     });
 
-    this.contentString = '<div class="info-window-content"><div class="title"><b>' + data.name + "</b></div>" +
-        '<div class="content"><a href="' + self.URL + '">' + self.URL + "</a></div>" +
-        '<div class="content">' + self.street + "</div>" +
-        '<div class="content">' + self.city + "</div>" +
-        '<div class="content">' + self.phone + "</div></div>";
-
-    this.infoWindow = new google.maps.InfoWindow({
-        content: self.contentString
-    });
-
+    // Create a marker per location, and put into markers array
     this.marker = new google.maps.Marker({
-        position: new google.maps.LatLng(data.lat, data.long),
-        map: map,
-        title: data.name
+        position: this.position,
+        title: this.name,
+        animation: google.maps.Animation.DROP,
+        icon: defaultIcon
     });
 
-    this.showMarker = ko.computed(function () {
-        if (this.visible() === true) {
-            this.marker.setMap(map);
+    self.filterMarkers = ko.computed(function () {
+        // set marker and extend bounds (showListings)
+        if (self.visible() === true) {
+            self.marker.setMap(map);
+            bounds.extend(self.marker.position);
+            map.fitBounds(bounds);
         } else {
-            this.marker.setMap(null);
+            self.marker.setMap(null);
         }
-        return true;
-    }, this);
-
-    this.marker.addListener('click', function () {
-        self.contentString = '<div class="info-window-content"><div class="title"><b>' + data.name + "</b></div>" +
-            '<div class="content"><a href="' + self.URL + '">' + self.URL + "</a></div>" +
-            '<div class="content">' + self.street + "</div>" +
-            '<div class="content">' + self.city + "</div>" +
-            '<div class="content"><a href="tel:' + self.phone + '">' + self.phone + "</a></div></div>";
-
-        self.infoWindow.setContent(self.contentString);
-
-        self.infoWindow.open(map, this);
-
-        self.marker.setAnimation(google.maps.Animation.BOUNCE);
-        setTimeout(function () {
-            self.marker.setAnimation(null);
-        }, 2100);
     });
 
+    // Create an onclick even to open an indowindow at each marker
+    this.marker.addListener('click', function () {
+        populateInfoWindow(this, self.street, self.city, self.phone, infoWindow);
+        toggleBounce(this);
+        map.panTo(this.getPosition());
+    });
+
+    // Two event listeners - one for mouseover, one for mouseout,
+    // to change the colors back and forth.
+    this.marker.addListener('mouseover', function () {
+        this.setIcon(highlightedIcon);
+    });
+    this.marker.addListener('mouseout', function () {
+        this.setIcon(defaultIcon);
+    });
+
+    // show item info when selected from list
+    this.show = function (location) {
+        google.maps.event.trigger(self.marker, 'click');
+    };
+
+    // creates bounce effect when item selected
     this.bounce = function (place) {
         google.maps.event.trigger(self.marker, 'click');
     };
-}
+};
 
-var app = {
+var NeighborhoodMapViewModel = function () {
     var self = this;
 
-    this.searchTerm = ko.observable("");
+    this.searchItem = ko.observable('');
 
-    this.locationList = ko.observableArray([]);
+    this.mapList = ko.observableArray([]);
 
-    // Foursquare API settings
-    clientID = "LQRWX2N2YFMYRI451DXCFBP0LQYZCXTUNNZSW04JIAUEMSVH";
-    clientSecret = "M15I4MBAXTYAUNCPGMFXDSQJVPJID1FYYVZ2XIU5Y12E4Q3F";
-
-    initialLocations.forEach(function (locationItem) {
-        self.locationList.push(new Location(locationItem));
+    locationArray.forEach(function (location) {
+        self.mapList.push(new Location(location));
     });
 
-    this.filteredList = ko.computed(function () {
-        var filter = self.searchTerm().toLowerCase();
-        if (!filter) {
-            self.locationList().forEach(function (locationItem) {
-                locationItem.visible(true);
-            });
-            return self.locationList();
-        } else {
-            return ko.utils.arrayFilter(self.locationList(), function (locationItem) {
-                var string = locationItem.name.toLowerCase();
-                var result = (string.search(filter) >= 0);
-                locationItem.visible(result);
+    this.locationList = ko.computed(function () {
+        var searchFilter = self.searchItem().toLowerCase();
+        if (searchFilter) {
+            return ko.utils.arrayFilter(self.mapList(), function (location) {
+                var str = location.name.toLowerCase();
+                var result = str.includes(searchFilter);
+                location.visible(result);
                 return result;
             });
         }
+        self.mapList().forEach(function (location) {
+            location.visible(true);
+        });
+        return self.mapList();
     }, self);
+};
 
-    this.mapElem = document.getElementById('map');
-    this.mapElem.style.height = window.innerHeight - 50;
+// populates the info window.
+function populateInfoWindow(marker, street, city, phone, infowindow) {
+    if (infowindow.marker != marker) {
+        infowindow.setContent('');
+        infowindow.marker = marker;
+
+        infowindow.addListener('closeclick', function () {
+            infowindow.marker = null;
+        });
+        var streetViewService = new google.maps.StreetViewService();
+        var radius = 50;
+
+        var windowContent = '<h4>' + marker.title + '</h4>' +
+            '<p>' + street + "<br>" + city + '<br>' + phone + "</p>";
+
+        var getStreetView = function (data, status) {
+            if (status == google.maps.StreetViewStatus.OK) {
+                var nearStreetViewLocation = data.location.latLng;
+                var heading = google.maps.geometry.spherical.computeHeading(
+                    nearStreetViewLocation, marker.position);
+                infowindow.setContent(windowContent + '<div id="pano"></div>');
+                var panoramaOptions = {
+                    position: nearStreetViewLocation,
+                    pov: {
+                        heading: heading,
+                        pitch: 20
+                    }
+                };
+                var panorama = new google.maps.StreetViewPanorama(
+                    document.getElementById('pano'), panoramaOptions);
+            } else {
+                infowindow.setContent(windowContent + '<div style="color: red">No Street View Found</div>');
+            }
+        };
+        streetViewService.getPanoramaByLocation(marker.position, radius, getStreetView);
+        infowindow.open(map, marker);
+    }
 }
 
-function errorHandling() {
-    alert("Error with Google Maps API.");
+function toggleBounce(marker) {
+    if (marker.getAnimation() !== null) {
+        marker.setAnimation(null);
+    } else {
+        marker.setAnimation(google.maps.Animation.BOUNCE);
+        setTimeout(function () {
+            marker.setAnimation(null);
+        }, 1400);
+    }
 }
 
-function initMap() {
-     map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 12,
-        center: {
-            lat: 37.370,
-            lng: -122.002
-        }
-    });
-    ko.applyBindings(new NeighborhoodMapViewModel());
+// Create a marker with a new color.
+function makeMarkerIcon(markerColor) {
+    var markerImage = new google.maps.MarkerImage(
+        'http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|' + markerColor +
+        '|40|_|%E2%80%A2',
+        new google.maps.Size(21, 34),
+        new google.maps.Point(0, 0),
+        new google.maps.Point(10, 34),
+        new google.maps.Size(21, 34));
+    return markerImage;
 }
