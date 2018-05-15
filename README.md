@@ -1,11 +1,13 @@
-# About
+# Neighborhood Map.
+  Project using Javascript and the Google Maps API to create a map of a neighboorhod, and a list of mass transit stops and some locations of interest.
+  
+## About
 
-Project 5 of nano-degree program, a neighborhood map web application using
-knockoutJS, and Google Maps API.
 
 ## Requirements
 - knockoutJS
 - jQuery
+- Foundation CSS and Foundations Icons.
 
 ## Usage
 
