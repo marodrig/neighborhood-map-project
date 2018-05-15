@@ -58,25 +58,32 @@ var locationArray = [
             lng: -71.0720801353
         }
     },
-    {   
+    {
         name: 'MIT Museum',
         location: {
             lat: 42.357665236,
             lng: -71.092832962
         }
     },
-    {   
+    {
         name: 'Rod Dee',
         location: {
             lat: 42.343040,
-            lng: -71.099159
+            lng: -71.1167
         }
     },
     {
-        name: 'Place Holder',
+        name: 'Harvard University',
         location: {
-            lat: 42.33909,
-            lng: -71.01000
+            lat: 42.3770,
+            lng: -71.116629
+        }
+    },
+    {
+        name: 'Massachusetts Institute of Technology',
+        location: {
+            lat: 42.3601,
+            lng: -71.0942
         }
     }
 ];

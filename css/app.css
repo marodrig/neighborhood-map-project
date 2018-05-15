@@ -4,11 +4,23 @@ body {
 }
 
 #foursquare-img {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
 }
 
-.size-14 {
+fi-loop {
+    color: aqua;
+    vertical-align: middle;
+    text-align: center;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0.4em;
+    margin: 0;
+}
+
+size-14 {
     font-size: 14px;
 }
 

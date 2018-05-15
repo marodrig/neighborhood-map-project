@@ -14,7 +14,7 @@
     <header>
         <div class="grid-x">
             <div class="cell small-10">
-                <h3> Created using: </h3>
+                <h4> Created using: </h4>
                 <a href="https://developer.foursquare.com/" class="href" target="_blank">
           <img id="foursquare-img" src="http://www.freeiconspng.com/uploads/foursquare-icon-22.png" alt="used with foursquare" />
         </a>
@@ -25,20 +25,20 @@
         <input class="search-box" id="search-box" data-bind="textInput: searchItem, valueUpdate: 'afterkeydown'" />
         <div class="gird-x">
             <div class="cell small-6">
-                <i class="fi-magnifying-glass size-14"></i>
+                <i class="fi-loop"></i>
             </div>
         </div>
     </div>
     <div class="app" id="app">
-
         <div class="list" id="list">
-           <ul>
-               <li>Map Locations
-               <i class="fi-list"></i>
-               </li>
-           </ul>
+            <ul>
+                <li>
+                    <i class="fi-list"></i> Map Locations
+                </li>
+            </ul>
             <ul class="results" id="results" data-bind="foreach: locationList">
-                <li class="place" id="place" data-bind="text: name, click: bounce"></li>
+                <li class="place" id="place" data-bind="text: name, click: bounce">
+                </li>
             </ul>
         </div>
         <div class="map" id="map">If you can read this, there has been an error loading Google Maps. Please Try Again.</div>
