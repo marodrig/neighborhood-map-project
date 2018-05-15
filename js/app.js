@@ -15,6 +15,7 @@ function initMap() {
         center: myCity,
         zoom: 18
     });
+    // Setup up metro routes layer.
     var transitLayer = new google.maps.TransitLayer();
     transitLayer.setMap(map);
     infoWindow = new google.maps.InfoWindow();
@@ -55,6 +56,27 @@ var locationArray = [
         location: {
             lat: 42.3612710899,
             lng: -71.0720801353
+        }
+    },
+    {   
+        name: 'MIT Museum',
+        location: {
+            lat: 42.357665236,
+            lng: -71.092832962
+        }
+    },
+    {   
+        name: 'Rod Dee',
+        location: {
+            lat: 42.343040,
+            lng: -71.099159
+        }
+    },
+    {
+        name: 'Place Holder',
+        location: {
+            lat: 42.33909,
+            lng: -71.01000
         }
     }
 ];
