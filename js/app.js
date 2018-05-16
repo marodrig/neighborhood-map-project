@@ -98,6 +98,7 @@ var MapLocation = function (data) {
     this.phone = "";
 
     this.visible = ko.observable(true);
+    this.isFavorite = ko.observable(false);
 
     // 
     var defaultIcon = makeMarkerIcon('FF00FF');
