@@ -1,3 +1,7 @@
+/*
+/ Creates an interactive map display using Google Maps, FourSquare, and 
+/ KnockoutJS for a responsive UI.
+*/
 'use strict';
 // global variables
 var map;
@@ -88,17 +92,20 @@ var locationArray = [
     }
 ];
 
-// Location object
+/*
+/  Representas a map location.
+/  @param {data}
+/
+*/
 var MapLocation = function (data) {
     var self = this;
-    this.name = data.name;
-    this.position = data.location;
-    this.street = "";
-    this.city = "";
-    this.phone = "";
+    this.name = ko.observable(data.name);
+    this.position = ko.observable(data.location);
+    this.street = ko.observable("");
+    this.city = ko.observable("");
+    this.phone = ko.observable("");
 
     this.visible = ko.observable(true);
-    this.isFavorite = ko.observable(false);
 
     // 
     var defaultIcon = makeMarkerIcon('FF00FF');
@@ -109,7 +116,7 @@ var MapLocation = function (data) {
     var clientID = "LQRWX2N2YFMYRI451DXCFBP0LQYZCXTUNNZSW04JIAUEMSVH";
     var clientSecret = "M15I4MBAXTYAUNCPGMFXDSQJVPJID1FYYVZ2XIU5Y12E4Q3F";
 
-    var foursquareURL = 'https://api.foursquare.com/v2/venues/search?ll=' + this.position.lat + ',' + this.position.lng + '&client_id=' + clientID + '&client_secret=' + clientSecret + '&v=20160118' + '&query=' + this.name;
+    var foursquareURL = 'https://api.foursquare.com/v2/venues/search?ll=' + this.position().lat + ',' + this.position().lng + '&client_id=' + clientID + '&client_secret=' + clientSecret + '&v=20160118' + '&query=' + this.name();
 
     $.getJSON(foursquareURL).done(function (data) {
         var results = data.response.venues[0];
@@ -123,19 +130,20 @@ var MapLocation = function (data) {
 
     // Create a marker per location, and put into markers array
     this.marker = new google.maps.Marker({
-        position: this.position,
-        title: this.name,
+        position: this.position(),
+        title: this.name(),
         animation: google.maps.Animation.DROP,
         icon: defaultIcon
     });
 
     self.filterMarkers = ko.computed(function () {
         if (self.visible() === true) {
+            self.marker.setVisible(true);
             self.marker.setMap(map);
             bounds.extend(self.marker.position);
             map.fitBounds(bounds);
         } else {
-            self.marker.setMap(null);
+            self.marker.setVisible(false);
         }
     });
 
@@ -165,7 +173,10 @@ var MapLocation = function (data) {
         google.maps.event.trigger(self.marker, 'click');
     };
 };
-
+/*
+/   ViewModel of the map.
+/
+*/
 var NeighborhoodMapViewModel = function () {
     var self = this;
 
@@ -181,7 +192,7 @@ var NeighborhoodMapViewModel = function () {
         var searchFilter = self.searchItem().toLowerCase();
         if (searchFilter) {
             return ko.utils.arrayFilter(self.mapList(), function (location) {
-                var str = location.name.toLowerCase();
+                var str = location.name().toLowerCase();
                 var result = str.includes(searchFilter);
                 location.visible(result);
                 return result;
@@ -194,7 +205,10 @@ var NeighborhoodMapViewModel = function () {
     }, self);
 };
 
-// populates the info window.
+/*
+/   Helper function to populate the info window.
+/
+*/
 function populateInfoWindow(marker, street, city, phone, infowindow) {
     if (infowindow.marker != marker) {
         infowindow.setContent('');
@@ -232,7 +246,9 @@ function populateInfoWindow(marker, street, city, phone, infowindow) {
         infowindow.open(map, marker);
     }
 }
-
+/*
+/   Helper function used to animate a bounce of the map marker.
+*/
 function toggleBounce(marker) {
     if (marker.getAnimation() !== null) {
         marker.setAnimation(null);
@@ -244,7 +260,11 @@ function toggleBounce(marker) {
     }
 }
 
-// Create a marker with a new color.
+/*
+/
+/   Helper function used to create a marker with a given color.
+/
+*/
 function makeMarkerIcon(markerColor) {
     var markerImage = new google.maps.MarkerImage(
         'http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|' + markerColor +
